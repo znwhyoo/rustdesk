@@ -1,0 +1,67 @@
+name: Android APK (release)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - my-1.4.0
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "stable"
+          cache: true
+
+      - name: Cache Cargo registry & git
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # 如果你还没在本地生成新的 Cargo.lock，又不想装 cargo：
+      # 可以先让 CI 自己生成（但注意：有些构建脚本会要求 --locked）
+      # - name: Regenerate Cargo.lock (optional)
+      #   run: |
+      #     rm -f Cargo.lock
+      #     cargo generate-lockfile
+
+      - name: Build Android
+        run: |
+          chmod +x build_android_deps.sh build_android.sh
+          ./build_android_deps.sh
+          ./build_android.sh
+
+      - name: Collect APKs
+        run: |
+          mkdir -p artifacts
+          find . -name "*.apk" -maxdepth 6 -print -exec cp -v {} artifacts/ \;
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rustdesk-android-apks
+          path: artifacts/*.apk
