@@ -415,7 +415,7 @@ class ServerModel with ChangeNotifier {
       }
     } else {
       await checkRequestNotificationPermission();
-      if (bind.mainGetLocalOption(key: kOptionDisableFloatingWindow) != 'Y') {
+      if (bind.mainGetLocalOption(key: kOptionDisableFloatingWindow) == 'N') {
         await checkFloatingWindowPermission();
       }
       if (!await AndroidPermissionManager.check(kManageExternalStorage)) {
@@ -786,8 +786,9 @@ class ServerModel with ChangeNotifier {
 
   void androidUpdatekeepScreenOn() async {
     if (!isAndroid) return;
-    var floatingWindowDisabled =
-        bind.mainGetLocalOption(key: kOptionDisableFloatingWindow) == "Y" ||
+    final floatingWindowOpt =
+        bind.mainGetLocalOption(key: kOptionDisableFloatingWindow);
+    var floatingWindowDisabled = floatingWindowOpt != "N" ||
             !await AndroidPermissionManager.check(kSystemAlertWindow);
     final keepScreenOn = floatingWindowDisabled
         ? KeepScreenOn.never

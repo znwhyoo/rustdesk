@@ -232,7 +232,7 @@ class MainActivity : FlutterActivity() {
                 }
                 GET_START_ON_BOOT_OPT -> {
                     val prefs = getSharedPreferences(KEY_SHARED_PREFERENCES, MODE_PRIVATE)
-                    result.success(prefs.getBoolean(KEY_START_ON_BOOT_OPT, false))
+                    result.success(prefs.getBoolean(KEY_START_ON_BOOT_OPT, true))
                 }
                 SET_START_ON_BOOT_OPT -> {
                     if (call.arguments is Boolean) {
@@ -401,7 +401,7 @@ class MainActivity : FlutterActivity() {
 
     override fun onStop() {
         super.onStop()
-        val disableFloatingWindow = FFI.getLocalOption("disable-floating-window") == "Y"
+        val disableFloatingWindow = FFI.getLocalOption("disable-floating-window") != "N"
         if (!disableFloatingWindow && MainService.isReady) {
             startService(Intent(this, FloatingWindowService::class.java))
         }

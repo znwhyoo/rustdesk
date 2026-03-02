@@ -72,7 +72,7 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
   var _enableStartOnBoot = false;
   var _checkUpdateOnStartup = false;
   var _showTerminalExtraKeys = false;
-  var _floatingWindowDisabled = false;
+  var _floatingWindowDisabled = true;
   var _keepScreenOn = KeepScreenOn.duringControlled; // relay on floating window
   var _enableAbr = false;
   var _denyLANDiscovery = false;
@@ -181,14 +181,15 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
       }
 
       var checkUpdateOnStartup =
-          mainGetLocalBoolOptionSync(kOptionEnableCheckUpdate);
+          bind.mainGetLocalOption(key: kOptionEnableCheckUpdate) == "Y";
       if (checkUpdateOnStartup != _checkUpdateOnStartup) {
         update = true;
         _checkUpdateOnStartup = checkUpdateOnStartup;
       }
 
-      var floatingWindowDisabled =
-          bind.mainGetLocalOption(key: kOptionDisableFloatingWindow) == "Y" ||
+      final floatingWindowOpt =
+          bind.mainGetLocalOption(key: kOptionDisableFloatingWindow);
+      var floatingWindowDisabled = floatingWindowOpt != "N" ||
               !await AndroidPermissionManager.check(kSystemAlertWindow);
       if (floatingWindowDisabled != _floatingWindowDisabled) {
         update = true;
